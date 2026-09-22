@@ -1,0 +1,6 @@
+{
+  "name": "openswarm",
+  "metadata": { "description": "Local messaging between existing Claude Code and Codex agents" },
+  "owner": { "name": "OpenSwarm contributors" },
+  "plugins": [{ "name": "openswarm", "source": "./plugins/openswarm", "description": "Local Claude Code and Codex peer messaging", "version": "0.1.0" }]
+}

@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "SessionStart": [{
+      "matcher": "startup|resume|clear|compact",
+      "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/openswarm.mjs\" hook", "timeout": 10, "statusMessage": "Connecting OpenSwarm" }]
+    }]
+  }
+}

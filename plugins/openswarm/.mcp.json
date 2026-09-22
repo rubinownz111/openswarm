@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "openswarm": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/bin/openswarm.mjs", "mcp"]
+    }
+  }
+}

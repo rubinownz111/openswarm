@@ -1,0 +1,34 @@
+{
+  "name": "@rubinownz111/openswarm",
+  "version": "0.1.0",
+  "description": "Local, durable messaging between existing Claude Code and Codex sessions. No UI.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "bin": {
+    "openswarm": "plugins/openswarm/bin/openswarm.mjs"
+  },
+  "files": [
+    "plugins/openswarm",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rubinownz111/openswarm.git"
+  },
+  "keywords": [
+    "codex",
+    "claude-code",
+    "mcp",
+    "agents",
+    "messaging"
+  ]
+}

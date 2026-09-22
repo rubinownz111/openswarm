@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenSwarm"
+  short_description: "Message existing Claude Code and Codex peers"
+  default_prompt: "Use $openswarm to find the intended peer and send my message."

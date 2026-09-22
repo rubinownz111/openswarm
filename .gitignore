@@ -1,0 +1,6 @@
+node_modules/
+.openswarm/
+.local/
+*.tgz
+*.log
+.DS_Store

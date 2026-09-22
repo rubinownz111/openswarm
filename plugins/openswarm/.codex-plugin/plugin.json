@@ -1,0 +1,21 @@
+{
+  "name": "openswarm",
+  "version": "0.1.0",
+  "description": "Local messaging between existing Claude Code and Codex sessions",
+  "author": {
+    "name": "OpenSwarm contributors"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "OpenSwarm",
+    "shortDescription": "Message Claude Code and Codex peers.",
+    "longDescription": "Discover peers, exchange messages, and reply through a durable local broker. No UI or cloud relay.",
+    "developerName": "OpenSwarm contributors",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use OpenSwarm to message another agent."
+  },
+  "mcpServers": "./.mcp.json",
+  "license": "MIT",
+  "repository": "https://github.com/rubinownz111/openswarm"
+}

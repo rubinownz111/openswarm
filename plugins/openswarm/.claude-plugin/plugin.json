@@ -1,0 +1,8 @@
+{
+  "name": "openswarm",
+  "version": "0.1.0",
+  "description": "Local messaging between existing Claude Code and Codex sessions",
+  "author": { "name": "OpenSwarm contributors" },
+  "repository": "https://github.com/rubinownz111/openswarm",
+  "license": "MIT"
+}
