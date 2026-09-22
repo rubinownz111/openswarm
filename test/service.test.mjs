@@ -42,14 +42,17 @@ test("IPC rejects missing credentials, wrong protocol and oversized frames witho
   const dir = temp(t);
   await daemon(t, dir);
   const run = runtime(dir);
-  const raw = (data) =>
+  const raw = (data, expectClose = false) =>
     new Promise((resolve, reject) => {
       const socket = net.createConnection(run.endpoint);
       let output = "";
       socket.on("connect", () => socket.write(data));
       socket.on("data", (c) => (output += c));
       socket.on("close", () => resolve(output));
-      socket.on("error", reject);
+      socket.on("error", (e) => {
+        if (expectClose && ["EPIPE", "ECONNRESET"].includes(e.code)) resolve(output);
+        else reject(e);
+      });
     });
   assert.match(
     await raw(
@@ -73,7 +76,7 @@ test("IPC rejects missing credentials, wrong protocol and oversized frames witho
     ),
     /Unauthorized/,
   );
-  assert.equal(await raw("x".repeat(140 * 1024)), "");
+  assert.equal(await raw("x".repeat(140 * 1024), true), "");
   assert.equal((await request("ping", {}, { dir })).protocol, 1);
 });
 test("daemon process crash leaves an uncertain message unknown and never replays it", async (t) => {
@@ -142,16 +145,13 @@ test("simultaneous auto-starts elect one daemon using OS locking", async (t) => 
   const dir = temp(t);
   const env = envFor(dir);
   const exec = promisify(execFile);
+  let daemonPid;
   t.after(async () => {
     try {
       await request("stop", {}, { dir });
-      await until(async () => {
-        try {
-          await request("ping", {}, { dir, timeout: 100 });
-          return false;
-        } catch {
-          return true;
-        }
+      await until(() => {
+        try { process.kill(daemonPid, 0); return false; }
+        catch { return true; }
       });
     } catch {
       /* Already stopped. */
@@ -167,5 +167,6 @@ test("simultaneous auto-starts elect one daemon using OS locking", async (t) => 
     ),
   );
   assert.ok(runs.every((r) => JSON.parse(r.stdout).messages.length === 0));
-  assert.ok((await request("ping", {}, { dir })).pid > 0);
+  daemonPid = (await request("ping", {}, { dir })).pid;
+  assert.ok(daemonPid > 0);
 });

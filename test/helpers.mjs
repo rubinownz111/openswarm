@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
+import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +12,7 @@ export const A = "claude:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 export const B = "codex:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 export const C = "codex:cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const directories = [];
-after(() => {
+after(async () => {
   for (const dir of directories) {
     const resolved = path.resolve(dir);
     if (
@@ -19,7 +20,7 @@ after(() => {
       !path.basename(resolved).startsWith("openswarm test ")
     )
       throw new Error("Unsafe test cleanup path");
-    rmSync(resolved, {
+    await rm(resolved, {
       recursive: true,
       force: true,
       maxRetries: 20,
