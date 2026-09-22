@@ -129,9 +129,18 @@ export class Store {
       )
       .all(...args, limit)
       .map(decode);
+    const page = [];
+    let bytes = 0;
+    for (const row of rows) {
+      const size = Buffer.byteLength(JSON.stringify(row));
+      if (page.length && bytes + size > 256 * 1024) break;
+      page.push(row);
+      bytes += size;
+    }
+    const more = page.length < rows.length || rows.length === limit;
     return {
-      messages: rows.reverse(),
-      before: rows.length === limit ? rows[0].seq : null,
+      messages: page.reverse(),
+      before: more && page.length ? page[0].seq : null,
     };
   }
   register(id, data) {

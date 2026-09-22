@@ -3,6 +3,30 @@ import assert from "node:assert/strict";
 import { Store } from "../plugins/openswarm/lib/store.mjs";
 import { temp, A, B, C } from "./helpers.mjs";
 
+test("large Unicode history pages stay bounded without losing messages", (t) => {
+  const store = new Store(temp(t));
+  t.after(() => store.close());
+  const ids = Array.from(
+    { length: 15 },
+    (_, i) =>
+      store.enqueue({
+        from: A,
+        to: B,
+        text: "界".repeat(24000),
+        key: String(i),
+      }).id,
+  );
+  let before;
+  const received = [];
+  do {
+    const page = store.history({ limit: 100, before });
+    assert.ok(Buffer.byteLength(JSON.stringify(page)) < 270000);
+    received.unshift(...page.messages.map((m) => m.id));
+    before = page.before;
+  } while (before);
+  assert.deepEqual(received, ids);
+});
+
 test("durable retry keys deduplicate identical sends and reject changed content", (t) => {
   const dir = temp(t);
   let store = new Store(dir);

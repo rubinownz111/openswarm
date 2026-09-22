@@ -125,8 +125,14 @@ export async function ensure(dir = stateDir()) {
   // answers first. A delayed loser must not start after the caller stops the winner.
   await new Promise((resolve) => {
     const timer = setTimeout(resolve, 6000);
-    const done = () => { clearTimeout(timer); if (child.connected) child.disconnect(); resolve(); };
-    child.once("message", done); child.once("exit", done); child.once("error", done);
+    const done = () => {
+      clearTimeout(timer);
+      if (child.connected) child.disconnect();
+      resolve();
+    };
+    child.once("message", done);
+    child.once("exit", done);
+    child.once("error", done);
   });
   for (let i = 0; i < 60; i++) {
     await delay(100);
@@ -153,7 +159,10 @@ export async function serve({
     );
   } catch (e) {
     lock.close();
-    if (/locked/.test(e.message)) { process.send?.({ started: false }); return; }
+    if (/locked/.test(e.message)) {
+      process.send?.({ started: false });
+      return;
+    }
     throw e;
   }
   const store = new Store(dir),

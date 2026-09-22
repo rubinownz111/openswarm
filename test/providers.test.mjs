@@ -1,5 +1,39 @@
 import test from "node:test";
+import { claudeAddress } from "../plugins/openswarm/lib/providers.mjs";
 import assert from "node:assert/strict";
+
+test("Claude addresses are revalidated against UUIDs after renames and name reuse", () => {
+  const listing = "worker [abc123]  ·  bg  ·  idle";
+  const agents = [{ sessionId: "wanted", name: "worker" }];
+  assert.equal(claudeAddress(listing, agents, "wanted"), "worker [abc123]");
+  assert.throws(
+    () =>
+      claudeAddress(
+        listing,
+        [{ sessionId: "replacement", name: "worker" }],
+        "wanted",
+      ),
+    /unavailable/,
+  );
+  assert.throws(
+    () =>
+      claudeAddress(
+        listing,
+        [...agents, { sessionId: "other", name: "worker" }],
+        "wanted",
+      ),
+    /ambiguous/,
+  );
+  assert.throws(
+    () =>
+      claudeAddress(
+        listing,
+        [{ sessionId: "wanted", name: "renamed" }],
+        "wanted",
+      ),
+    /renamed/,
+  );
+});
 import { PassThrough } from "node:stream";
 import { identity } from "../plugins/openswarm/lib/config.mjs";
 import {

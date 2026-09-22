@@ -7,6 +7,26 @@ import { StdioRpc, WebSocketRpc, DeliveryError } from "./rpc.mjs";
 import { UUID } from "./config.mjs";
 
 const exec = promisify(execFile);
+export function claudeAddress(listing, agents, nativeId) {
+  const target = agents.find((s) => s.sessionId === nativeId);
+  if (!target || agents.filter((s) => s.name === target.name).length !== 1)
+    throw new DeliveryError(
+      "Claude recipient unavailable or ambiguous",
+      "unavailable",
+    );
+  const rows = (listing || "")
+    .split("\n")
+    .filter((line) => line.trimStart().startsWith(target.name + " ["));
+  if (rows.length !== 1)
+    throw new DeliveryError(
+      "Claude recipient renamed, unavailable, or ambiguous",
+      "unavailable",
+    );
+  return rows[0]
+    .trim()
+    .split(/\s+·\s+/)[0]
+    .trim();
+}
 export function executable(
   provider,
   env = process.env,
@@ -302,7 +322,11 @@ export class Providers {
     ];
     this.health.codex = this.sessions.some((s) => s.provider === "codex")
       ? { ok: true }
-      : { ok: false, error: "No reachable Codex sessions. Connect from a desktop thread, or register a local app server with a loaded thread." };
+      : {
+          ok: false,
+          error:
+            "No reachable Codex sessions. Connect from a desktop thread, or register a local app server with a loaded thread.",
+        };
     return this.publicSessions();
   }
   async check(name, fn) {
@@ -323,18 +347,17 @@ export class Providers {
         "serve",
       ]);
       const { listing } = await client.tool("ListAgents", {});
-      const rows = (listing || "")
-        .split("\n")
-        .filter((line) => line.trimStart().startsWith(target.title + " ["));
-      if (rows.length !== 1)
-        throw new DeliveryError(
-          "Claude recipient renamed, unavailable, or ambiguous",
-          "unavailable",
-        );
-      const address = rows[0]
-        .trim()
-        .split(/\s+·\s+/)[0]
-        .trim();
+      // Revalidate the requested UUID before using its freshly listed address.
+      const { stdout } = await exec(
+        executable("claude"),
+        ["agents", "--json"],
+        { windowsHide: true, timeout: 10000, maxBuffer: 2 ** 20 },
+      );
+      const address = claudeAddress(
+        listing,
+        JSON.parse(stdout),
+        target.nativeId,
+      );
       const receipt = await client.tool("SendMessage", {
         to: address,
         message,
@@ -345,7 +368,11 @@ export class Providers {
           receipt.message || "Claude refused delivery",
           "rejected",
         );
-      return { provider: "claude", native: receipt };
+      return {
+        provider: "claude",
+        messageId: receipt.msg_id,
+        detail: String(receipt.message || "accepted").slice(0, 1000),
+      };
     }
     if (target.route.kind === "desktop") {
       const client = await this.desktop(target.route);
@@ -354,7 +381,11 @@ export class Providers {
         { threadId: target.nativeId, prompt: message },
         { "openai/threadId": target.route.origin },
       );
-      return { provider: "codex", native };
+      return {
+        provider: "codex",
+        threadId: target.nativeId,
+        detail: String(native.status || "accepted").slice(0, 1000),
+      };
     }
     const client = await this.appserver(target.route);
     const { data } = await client.request("thread/loaded/list", {

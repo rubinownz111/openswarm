@@ -50,7 +50,8 @@ test("IPC rejects missing credentials, wrong protocol and oversized frames witho
       socket.on("data", (c) => (output += c));
       socket.on("close", () => resolve(output));
       socket.on("error", (e) => {
-        if (expectClose && ["EPIPE", "ECONNRESET"].includes(e.code)) resolve(output);
+        if (expectClose && ["EPIPE", "ECONNRESET"].includes(e.code))
+          resolve(output);
         else reject(e);
       });
     });
@@ -150,8 +151,12 @@ test("simultaneous auto-starts elect one daemon using OS locking", async (t) => 
     try {
       await request("stop", {}, { dir });
       await until(() => {
-        try { process.kill(daemonPid, 0); return false; }
-        catch { return true; }
+        try {
+          process.kill(daemonPid, 0);
+          return false;
+        } catch {
+          return true;
+        }
       });
     } catch {
       /* Already stopped. */

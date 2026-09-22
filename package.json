@@ -18,7 +18,8 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "check": "node scripts/check.mjs && npm test"
+    "check": "node scripts/check.mjs && npm test",
+    "package:check": "node scripts/package-smoke.mjs"
   },
   "repository": {
     "type": "git",

@@ -19,4 +19,4 @@ jobs:
           node-version: "24"
       - run: npm ci --ignore-scripts
       - run: npm run check
-      - run: npm pack --dry-run
+      - run: npm run package:check
